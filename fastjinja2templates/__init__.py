@@ -1,0 +1,1 @@
+from fastjinja2templates.fastjinja2templates import FastJinja2Templates, global_init, template
