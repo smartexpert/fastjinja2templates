@@ -70,24 +70,51 @@ def global_init(*args, **kwargs):
     return templates
 
 # Define template rendering decorator
-def template(func, template_name:str = None):
-    if template_name is None:
-        module_name = os.path.basename(func.__module__).split(".")[-1]
-        template_path = f"{module_name}/{func.__name__}.html"
-    else:
-        template_path = template_name
-        
-    @wraps(func)
-    async def wrapper(request: Request, *args, **kwargs):
-        if iscoroutinefunction(func):
-            context = await func(request, *args, **kwargs)
+def template(_func=None, * ,template_name: str = None):
+    """
+    This function is a decorator that is used to render the output of a function as a Jinja2 template.
+    
+    Arguments:
+    _func (callable): The decorated function.
+    template_name (str, optional): The path to the template that will be rendered. If not specified, the module and function name will be used as the path.
+    
+    The decorated function should return a dictionary of context variables that will be passed to the template.
+    If the decorated function is an async function, it will be called asynchronously. Otherwise, it will be called synchronously.
+    If there is an error when rendering the template, the error template will be rendered and the error message will be passed as a context variable.
+    """
+    def decorator(func, template_name:str=_func):
+        if template_name is None:
+            # if no template is specified, use the name of the module and function as the template path
+            module_name = os.path.basename(func.__module__).split(".")[-1]
+            template_path = f"{module_name}/{func.__name__}.html"
         else:
-            context = func(request, *args, **kwargs)
-        context["request"] = request
-        try:
-            return templates.TemplateResponse(template_path, context)
-        except TemplateNotFound:
-            return templates.TemplateResponse("error.html", {"FastJinja2TemplatesError": f"Template not found: {template_path} in {templates.env.loader.searchpath[0]}","request": request, **context}, status_code=500)
-        except UndefinedError as error:
-            return templates.TemplateResponse("error.html", {"FastJinja2TemplatesError": f"{error.message} in {template_path}","request": request, **context}, status_code=500)               
-    return wrapper
+            # use the provided template name as the path
+            template_path = template_name
+
+        @wraps(func)
+        async def wrapper(request: Request, *args, **kwargs):
+            if iscoroutinefunction(func):
+                # if the function is an async function, call it asynchronously
+                context = await func(request, *args, **kwargs)
+            else:
+                # if the function is not an async function, call it synchronously
+                context = func(request, *args, **kwargs)
+            # add the request object to the context
+            context["request"] = request
+            try:
+                # render the template using the specified path and the context
+                return templates.TemplateResponse(template_path, context)
+            except TemplateNotFound:
+                # if the template is not found, render the error template and pass the error message as a context variable
+                return templates.TemplateResponse("error.html", {"FastJinja2TemplatesError": f"Template not found: {template_path} in {templates.env.loader.searchpath[0]}","request": request, **context}, status_code=500)
+            except UndefinedError as error:
+                # if there is an error when rendering the template, render the error template and pass the error message as a context variable
+                return templates.TemplateResponse("error.html", {"FastJinja2TemplatesError": f"{error.message} in {template_path}","request": request, **context}, status_code=500)               
+        return wrapper
+
+    if callable(_func):
+        # if _func is a function, call the decorator with the function and set template_name to None
+        return decorator(_func,template_name=None)
+    else:
+        # if _func is not a function, return the decorator function
+        return decorator
