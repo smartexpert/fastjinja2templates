@@ -6,6 +6,7 @@ The fastjinja2templates package makes it easy to use Jinja2 templates with FastA
 - Convenient debugging tools for quickly identifying and resolving issues with templates, such as incorrect template paths or undefined functions or variables.
 - The ability to globally inject custom functions into Jinja2 templates, making it easy to reuse common code across your templates.
 - The option to customize the error template, allowing you to provide a consistent experience for your users when errors occur.
+- The ability to create dynamically generated links within Jinja templates using the url_for method of the FastAPI request object, along with the include_query_parameters method of the startlette.datastructures.URL class. This allows you to easily create links using route names, path parameters, and query parameters.
 
 With fastjinja2templates, you can easily add dynamic content to your FastAPI applications using Jinja templates. It makes template management simple and helps you provide a seamless user experience even in the face of errors.
 
@@ -34,19 +35,25 @@ Here is a minimal example of using fastjinja2templates with default values:
 
 ```
 # Import the global_init function and template decorator from the fastjinja2templates package
-from fastjinja2templates import global_init
+from fastapi import FastAPI, Request
+from fastjinja2templates import global_init, template
+
+# Create a FastAPI app
+app = FastAPI()
 
 # Initialize the global templates object with default values
 global_init()
 
 # Define a FastAPI endpoint that uses the template decorator to render a Jinja template
-@app.get("/hello-world")
-@template("hello_world.html")
-def hello_world():
+@app.get("/")
+@template()
+def index(request: Request):
     return {"message": "Hello, world!"}
 ```
 
-In the above example, the `hello_world.html` template must be placed in the templates directory in the current directory. The `template` decorator is used to convert the `hello_world` function to a FastAPI endpoint that renders the `hello_world.html` template with the data returned by the `hello_world` function.
+In the above example, the `main/index.html` template will be used to render the response for the `/` endpoint. The `template` decorator is used to convert the `index` function, which **must include** the `request` argument and **return a dictionary**, to a FastAPI endpoint that renders the `main/index.html` template with the data returned by the `index` function. The name of the template is inferred from the name of the function and the module it is defined in.
+
+Assuming the code segment exists in a file called `main.py`, the `main/index.html` template must be placed in a folder named `main` inside the default `templates` directory, which is located in the same directory as `main.py`.
 
 For more information about customizing the templates directory and injecting custom functions into Jinja2 templates, see the usage section of the documentation.
 ## The global_init function
@@ -137,6 +144,20 @@ Here is an example of a sample Jinja2 error template that uses the FastJinja2Tem
 ```
 
 In this example, the error template uses the Tailwind CSS framework to center the error message on the screen. You can customize the error template as desired to match your application's styling and layout.
+
+## Generating Dynamic Links within Jinja2 Templates
+
+The template decorator function makes the `url_for` function from the FastAPI request object and the `URL` class from `starlette.datastructures.URL` available within Jinja2 templates.
+
+To use these functions, you can simply call them in the template, like this:
+
+```<a href="{{ url_for('route_name') }}">My Link</a>```
+This will generate a link to the route named route_name using the url_for function.
+
+To create URLs with query parameters using the URL class, you can use the include_query_params method, like this:
+
+```{{ URL('route_name').include_query_params(query_param1="value1", query_param2="value2") }}```
+This will create a URL to the route named route_name with the query parameters query_param1 and query_param2. You can then use these query parameters in your code as you would normally.
 
 ## Using Custom Functions in Jinja2 Templates
 
