@@ -1,14 +1,40 @@
+[project]
+name = "fastjinja2templates"
+version = "0.1.0"
+authors = [
+  { name="Shuaib Mohammad", email="smartexpert@users.noreply.github.com" },
+]
+description = "A package for using Jinja2 templates with FastAPI"
+long_description = """A convenient and intuitive way to use Jinja2 templates with FastAPI, with helpful debugging tools and the ability to globally inject custom functions."""
+long_description_content_type = "text/markdown"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "fastapi>=0.88.0",
+    "jinja2>=3.1.2"
+]
+
+[project.urls]
+"Author" = "https://shuaib.org"
+"Homepage" = "https://github.com/smartexpert/fastjinja2templates"
+"Bug Tracker" = "https://github.com/smartexpert/fastjinja2templates/issues"
+
 [tool.poetry]
 name = "fastjinja2templates"
-version = "0.1.1"
+version = "0.1.0"
 description = ""
 authors = ["Shuaib Mohammad <smartexpert@users.noreply.github.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-fastapi = "^0.88.0"
-jinja2 = "^3.1.2"
+fastapi = ">=0.88.0"
+jinja2 = ">=3.1.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
