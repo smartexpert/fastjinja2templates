@@ -1,40 +1,40 @@
 ## Introduction
 
-The fastapi_jinja2_templates package makes it easy to use Jinja2 templates with FastAPI. It offers the following benefits:
+The fastjinja2templates package makes it easy to use Jinja2 templates with FastAPI. It offers the following benefits:
 
 - A simple and intuitive decorator syntax for converting FastAPI endpoints to render Jinja templates.
 - Convenient debugging tools for quickly identifying and resolving issues with templates, such as incorrect template paths or undefined functions or variables.
 - The ability to globally inject custom functions into Jinja2 templates, making it easy to reuse common code across your templates.
 - The option to customize the error template, allowing you to provide a consistent experience for your users when errors occur.
 
-With fastapi_jinja2_templates, you can easily add dynamic content to your FastAPI applications using Jinja templates. It makes template management simple and helps you provide a seamless user experience even in the face of errors.
+With fastjinja2templates, you can easily add dynamic content to your FastAPI applications using Jinja templates. It makes template management simple and helps you provide a seamless user experience even in the face of errors.
 
 ## Installation
 
-To install the fastapi_jinja2_templates package, you can use either pip or poetry.
+To install the fastjinja2templates package, you can use either pip or poetry.
 
 **Installing with pip**
 To install the package using pip, run the following command:
 
-``pip install fastapi_jinja2_templates``
+``pip install fastjinja2templates``
 
 **Installing with poetry**
 
 To install the package using poetry, run the following command:
 
-``poetry add fastapi_jinja2_templates``
+``poetry add fastjinja2templates``
 
 ## Quick Start
 
-To get started with fastapi_jinja2_templates, you need to create a templates directory and place your Jinja templates in it. The default location of the templates directory is templates in the current directory from where `global_init` is called, but you can specify a custom directory using the directory argument.
+To get started with fastjinja2templates, you need to create a templates directory and place your Jinja templates in it. The default location of the templates directory is templates in the current directory from where `global_init` is called, but you can specify a custom directory using the directory argument.
 
 Once you have created the templates directory, you can use the `global_init` function to initialize the FastJinja2Templates object and make it available to your FastAPI application.
 
-Here is a minimal example of using fastapi_jinja2_templates with default values:
+Here is a minimal example of using fastjinja2templates with default values:
 
 ```
-# Import the global_init function and template decorator from the fastapi_jinja2_templates package
-from fastapi_jinja2_templates import global_init
+# Import the global_init function and template decorator from the fastjinja2templates package
+from fastjinja2templates import global_init
 
 # Initialize the global templates object with default values
 global_init()
@@ -51,12 +51,12 @@ In the above example, the `hello_world.html` template must be placed in the temp
 For more information about customizing the templates directory and injecting custom functions into Jinja2 templates, see the usage section of the documentation.
 ## The global_init function
 
-The global_init function is part of the fastapi_jinja2_templates package and is used to initialize the FastJinja2Templates object for use in a FastAPI application.
+The global_init function is part of the fastjinja2templates package and is used to initialize the FastJinja2Templates object for use in a FastAPI application.
 
-To use global_init, you need to import it from the fastapi_jinja2_templates package and call it with the appropriate arguments:
+To use global_init, you need to import it from the fastjinja2templates package and call it with the appropriate arguments:
 
 ```
-from fastapi_jinja2_templates import global_init
+from fastjinja2templates import global_init
 
 # Initialize the global templates object
 global_init(
@@ -74,10 +74,10 @@ The global_init function accepts the following arguments:
 - directory_name: (Optional) The name of the directory where the templates are stored. This is used to construct the default template path for the template decorator. If directory is specified, this argument is ignored. Otherwise, the default value is "templates".
 - functions: (Optional) A dictionary of functions that should be available in the Jinja2 environment. The keys of the dictionary are the function names, and the values are the function objects.
 
-After calling global_init, you can use the template decorator from the fastapi_jinja2_templates package to specify which templates should be used to render the responses of your path operation functions. For example:
+After calling global_init, you can use the template decorator from the fastjinja2templates package to specify which templates should be used to render the responses of your path operation functions. For example:
 
 ```
-from fastapi_jinja2_templates import template
+from fastjinja2templates import template
 
 @template("my_template.html")
 async def my_path_operation_function(request: Request):

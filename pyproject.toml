@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastjinja2templates"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Shuaib Mohammad <smartexpert@users.noreply.github.com>"]
 readme = "README.md"
