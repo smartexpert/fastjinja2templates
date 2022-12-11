@@ -91,7 +91,6 @@ def test_template_decorator_default_init():
     tempdir_path = os.path.join(os.getcwd(),"fastjinja2templates","templates") 
     #tempfile.mkdtemp(dir=os.path.join(os.getcwd(),"fastjinja2templates","templates"), name="templates")
     os.mkdir(tempdir_path)
-    print("tempdir_path",tempdir_path)
     # Create an empty HTML file called 'home.html' within the temporary directory
     with open(os.path.join(tempdir_path, "home.html"), "w") as f:
         f.write("{{ message }}")
@@ -135,3 +134,33 @@ def test_template_decorator_default_init():
     if os.path.exists(tempdir_path):
         # If the directory exists, remove it and all of its contents
         shutil.rmtree(tempdir_path)
+
+def test_template_not_found():
+    # Create a test FastAPI app
+    app = FastAPI()
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Initialize the FastJinja2Templates object with the error template string
+        global_init(directory=temp_dir)
+
+        # Define a test route with the template decorator
+        assert os.path.exists(temp_dir)
+        assert os.path.exists(os.path.join(temp_dir,"test.html")) == False
+
+        @app.get("/")
+        @template("test.html")
+        def test_route(request: Request):
+            return {"message": "Hello, world!"}
+
+        # Define a test client for the app
+        with TestClient(app) as client:
+            # Send a request to the test route
+            response = client.get("/")
+
+            # Check that the response status code is 500
+            assert response.status_code == 500
+
+            # Check that the response body contains the expected error message
+            assert "Template not found" in response.text
+            assert "test.html" in response.text
+            assert "Hello, world!" not in response.text

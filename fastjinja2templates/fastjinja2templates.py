@@ -7,6 +7,25 @@ from fastapi.templating import Jinja2Templates
 from jinja2.exceptions import TemplateNotFound, UndefinedError
 from starlette.datastructures import URL
 
+error_template = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ FastJinja2TemplatesError }}</h1>
+</body>
+</html>
+"""
+
 class FastJinja2Templates(Jinja2Templates):
     def __init__(self, *args, directory_name="templates", **kwargs):
         # Set the default value of the "directory" keyword argument to the path of the module from where init is called + "/directory_name"
@@ -15,6 +34,12 @@ class FastJinja2Templates(Jinja2Templates):
         # Check if the directory exists, and raise an exception if it does not exist
         if not Path(kwargs["directory"]).exists():
             raise FastJinja2Templates.TemplatesDirectoryNotFound(f'The directory path {Path(kwargs["directory"])} does not exist.')
+
+        # Check if the error.html file exists, and create it if it does not
+        error_template_path = Path(kwargs["directory"]) / "error.html"
+        if not error_template_path.exists():
+            with open(error_template_path, "w") as error_template_file:
+                error_template_file.write(error_template)
 
         # Remove the "functions" keyword argument from kwargs
         functions = kwargs.pop("functions", {})
@@ -58,12 +83,8 @@ def template(template_name: str = None):
             try:
                 return templates.TemplateResponse(template_path, context)
             except TemplateNotFound:
-                return {
-                    "message": f"Template not found: {template_path} in {templates.env.loader.searchpath[0]}"
-                }
+                return templates.TemplateResponse("error.html", {"FastJinja2TemplatesError": f"Template not found: {template_path} in {templates.env.loader.searchpath[0]}","request": request, **context}, status_code=500)
             except UndefinedError as error:
-                return {
-                    "message": f"{error.message} in {template_path}"
-                }                
+                return templates.TemplateResponse("error.html", {"FastJinja2TemplatesError": f"{error.message} in {template_path}","request": request, **context}, status_code=500)               
         return wrapper
     return decorator
