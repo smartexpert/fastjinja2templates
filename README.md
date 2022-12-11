@@ -14,6 +14,8 @@ With fastjinja2templates, you can easily add dynamic content to your FastAPI app
 
 To install the fastjinja2templates package, you can use either pip or poetry.
 
+*Note that you must install fastapi and jinja2 packages before hand to avoid any errors during installation.*
+
 **Installing with pip**
 To install the package using pip, run the following command:
 
