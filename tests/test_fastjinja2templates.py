@@ -18,10 +18,10 @@ def test_FastJinja2Templates():
     with tempfile.TemporaryDirectory() as tempdir:
         # Create a FastJinja2Templates instance with a nonexistent directory
         with pytest.raises(FastJinja2Templates.TemplatesDirectoryNotFound):
-            FastJinja2Templates(directory_name="nonexistent")
+            global_init(directory_name="nonexistent")
 
         # Create a FastJinja2Templates instance with a valid directory
-        templates = FastJinja2Templates(directory_name=tempdir)
+        templates = global_init(directory_name=tempdir)
 
         # Verify that the templates directory was set correctly
         # assert templates.env.globalsdirectory == tempdir

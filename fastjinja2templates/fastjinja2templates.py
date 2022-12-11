@@ -1,6 +1,6 @@
 import os
 from functools import wraps
-from inspect import iscoroutinefunction
+from inspect import iscoroutinefunction, currentframe, getmodule
 from pathlib import Path
 from fastapi.requests import Request
 from fastapi.templating import Jinja2Templates
@@ -27,9 +27,9 @@ error_template = """
 """
 
 class FastJinja2Templates(Jinja2Templates):
-    def __init__(self, *args, directory_name="templates", **kwargs):
+    def __init__(self, *args, root_directory, directory_name="templates", **kwargs):
         # Set the default value of the "directory" keyword argument to the path of the module from where init is called + "/directory_name"
-        kwargs.setdefault("directory", str(Path(__file__).parent / directory_name))
+        kwargs.setdefault("directory", str(root_directory / directory_name))
 
         # Check if the directory exists, and raise an exception if it does not exist
         if not Path(kwargs["directory"]).exists():
@@ -58,33 +58,36 @@ class FastJinja2Templates(Jinja2Templates):
         pass        
 
 def global_init(*args, **kwargs):
-    # Instantiate FastJinja2Templates by passing it all the arguments it received
     global templates
-    templates = FastJinja2Templates(*args, **kwargs)
+
+    # Get the module object for the calling frame
+    frame = currentframe().f_back
+    module = getmodule(frame)
+
+    # Instantiate FastJinja2Templates using the arguments and the module's parent directory
+    templates = FastJinja2Templates(*args, **kwargs, root_directory=Path(module.__file__).parent)
+
     return templates
 
 # Define template rendering decorator
-def template(template_name: str = None):
-    def decorator(func, template_name=template_name):
-
-        if template_name is None:
-            module_name = os.path.basename(func.__module__).split(".")[-1]
-            template_path = f"{module_name}/{func.__name__}.html"
+def template(func, template_name:str = None):
+    if template_name is None:
+        module_name = os.path.basename(func.__module__).split(".")[-1]
+        template_path = f"{module_name}/{func.__name__}.html"
+    else:
+        template_path = template_name
+        
+    @wraps(func)
+    async def wrapper(request: Request, *args, **kwargs):
+        if iscoroutinefunction(func):
+            context = await func(request, *args, **kwargs)
         else:
-            template_path = template_name
-
-        @wraps(func)
-        async def wrapper(request: Request, *args, **kwargs):
-            if iscoroutinefunction(func):
-                context = await func(request, *args, **kwargs)
-            else:
-                context = func(request, *args, **kwargs)
-            context["request"] = request
-            try:
-                return templates.TemplateResponse(template_path, context)
-            except TemplateNotFound:
-                return templates.TemplateResponse("error.html", {"FastJinja2TemplatesError": f"Template not found: {template_path} in {templates.env.loader.searchpath[0]}","request": request, **context}, status_code=500)
-            except UndefinedError as error:
-                return templates.TemplateResponse("error.html", {"FastJinja2TemplatesError": f"{error.message} in {template_path}","request": request, **context}, status_code=500)               
-        return wrapper
-    return decorator
+            context = func(request, *args, **kwargs)
+        context["request"] = request
+        try:
+            return templates.TemplateResponse(template_path, context)
+        except TemplateNotFound:
+            return templates.TemplateResponse("error.html", {"FastJinja2TemplatesError": f"Template not found: {template_path} in {templates.env.loader.searchpath[0]}","request": request, **context}, status_code=500)
+        except UndefinedError as error:
+            return templates.TemplateResponse("error.html", {"FastJinja2TemplatesError": f"{error.message} in {template_path}","request": request, **context}, status_code=500)               
+    return wrapper
